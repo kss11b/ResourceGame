@@ -45,6 +45,10 @@
   bottom: 15px;
 }
 
+.warning-card {
+  /* display: block; */
+  /* position: absolute; */
+}
 /* .card-button {
   vertical-align: bottom;
 } */
