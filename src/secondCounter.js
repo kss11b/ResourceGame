@@ -32,23 +32,23 @@ componentWillUnmount() {
   clearInterval(this.interval);
 }
 
-availableActions = fromJS({
-  fishing: {
+availableActions = fromJS([
+{
     name: 'Go Fishing',
     difficulty: 3,
     actionName: 'Fishing'
   },
-  goldMining:{
+{
     name: 'Mine Gold',
     difficulty: 5,
     actionName: 'Mining Gold'
   },
-  bread: {
+ {
     name: 'Make Bread',
     difficulty: 2,
     actionName: 'Baking Bread'
   }
-})
+])
 
 
 mineGold = () => {
@@ -101,6 +101,18 @@ bakeBread = () => {
   }
 }
 
+assignWorker = e => {
+  const {workForce} = this.state;
+  console.log(e.target.getAttribute('workername'), 'workForce')
+  const workerIndex = workForce.findIndex(x => x.get('name') === parseInt(e.target.getAttribute('workername')))
+  const updatedWorkForce =
+  workForce
+  .setIn([workerIndex, 'task'], e.target.getAttribute('task'))
+  .setIn([workerIndex, 'workLoad'], parseInt(e.target.getAttribute('difficulty')))
+  // console.log(updatedWorkForce.toJS(), 'updatedWorkForce')
+  this.setState({workForce: updatedWorkForce})
+}
+
 addWorker = () => {
   const { workForce } = this.state;
   const worker = {
@@ -130,12 +142,19 @@ decreaseWorkload = workForceObject => {
 workerCollectionGenerator = () => {
   const { workForce, detailWorker } = this.state;
   console.log(detailWorker, 'generator')
-  const menu = (
+  const menu = worker => (
       <div className="col s12">
-          <a className="waves-effect waves-light btn" onClick={this.mineGold}>Mine Gold</a>
-          <a className="waves-effect waves-light btn" onClick={this.goFishing}>Go Fishing</a>
-          <a className="waves-effect waves-light btn" onClick={this.bakeBread}>Bake Bread</a>
-          <a className="waves-effect waves-light btn" onClick={this.addWorker}>Create Worker</a>
+          {this.availableActions.map(action =>
+          <a
+            name={worker.get('name')}
+            task={action.get('actionName')}
+            difficulty={action.get('difficulty')}
+            workerName={worker.get('name')}
+            className="waves-effect waves-light btn"
+            onClick={this.assignWorker}>
+            {action.get('name')}
+          </a>
+        )}
       </div>
       )
 
@@ -166,7 +185,7 @@ workerCollectionGenerator = () => {
 
 
 
-          {parseInt(detailWorker) === x.get('name') ? menu : null}
+          {parseInt(detailWorker) === x.get('name') ? menu(x) : null}
         </div>
     )
   )
@@ -217,6 +236,7 @@ calculateModifications= () => {
 
 
   render(){
+    // console.log('render')
     const {
       warningMessage,
       time,
@@ -228,7 +248,7 @@ calculateModifications= () => {
       detailWorker,
     } = this.state
 
-    console.log(detailWorker, 'detailWorker')
+    // console.log(detailWorker, 'detailWorker')
     // console.log(workForce ? workForce : null)
 
 
@@ -283,3 +303,51 @@ calculateModifications= () => {
     )
   }
 }
+
+
+
+//
+// const worker = {
+//   workLoad: 0,
+//   currentAction: null,
+// }
+//
+// const workerA = {
+//   workLoad: 0,
+//   currentAction: null,
+// }
+//
+// const workerB = {
+//   workLoad: 0,
+//   currentAction: null,
+// }
+//
+// const workerC = {
+//   workLoad: 0,
+//   currentAction: null,
+// }
+//
+// workforce = [workerA, workerB, workerC]
+//
+// setState {workForce: workforce.getIn([0, 'workLoad'])}
+//
+// actionArray = workforce.map(worker => worker.currentAction)
+//
+// ['fishing', 'mining', 'fishing']
+//
+//
+//
+// const availableActions = {
+//   fishing: {
+//     name: 'Go Fishing',
+//     difficulty: 3,
+//   },
+//   goldMining:{
+//     name: 'Mine Gold',
+//     difficulty: 5
+//   },
+//   bread: {
+//     name: 'Make Bread',
+//     difficulty: 2,
+//   }
+// }
