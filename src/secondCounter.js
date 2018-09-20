@@ -35,37 +35,20 @@ availableActions = fromJS([
 {
     name: 'Go Fishing',
     difficulty: 3,
-    actionName: 'Fishing'
+    actionName: 'fishing'
   },
 {
     name: 'Mine Gold',
     difficulty: 5,
-    actionName: 'Mining Gold'
+    actionName: 'mineGold'
   },
  {
     name: 'Make Bread',
     difficulty: 2,
-    actionName: 'Baking Bread'
+    actionName: 'bakeBread'
   }
 ])
 
-  availableActions = fromJS({
-    fishing: {
-      name: "Go Fishing",
-      difficulty: 3,
-      actionName: "Fishing"
-    },
-    goldMining: {
-      name: "Mine Gold",
-      difficulty: 5,
-      actionName: "Mining Gold"
-    },
-    bread: {
-      name: "Make Bread",
-      difficulty: 2,
-      actionName: "Baking Bread"
-    }
-  });
 
   mineGold = () => {
     const { bread } = this.state;
@@ -163,22 +146,23 @@ workerCollectionGenerator = () => {
             workerName={worker.get('name')}
             className="waves-effect waves-light btn"
             onClick={this.assignWorker}>
+
             {action.get('name')}
           </a>
         )}
       </div>
     );
 
-    assignWorker = (workerName, action) => {
-      const { workForce } = this.state;
-      const modifiedWorkforce = workForce.map(
-        x =>
-          parseInt(x.get("name")) === workerName
-            ? x.set("currentAction", action)
-            : x
-      );
-      this.setState({ workForce: modifiedWorkforce });
-    };
+    // assignWorker = (workerName, action) => {
+    //   const { workForce } = this.state;
+    //   const modifiedWorkforce = workForce.map(
+    //     x =>
+    //       parseInt(x.get("name")) === workerName
+    //         ? x.set("currentAction", action)
+    //         : x
+    //   );
+    //   this.setState({ workForce: modifiedWorkforce });
+    // };
 
     return workForce.map(x => (
       <div className="collection-item row" key={x.get("name")}>
