@@ -117,20 +117,25 @@ finishTask = worker => {
   // };
 
 payForTask = task => {
-  const {gold, goldSub} = this.state
+  const {gold, goldSub, workerCost} = this.state
   switch(task){
+    case 'hireWorker':
+    if(gold - goldSub - workerCost >= 0){
+      this.setState({goldSub: goldSub + 1})
+      return true
+    }
     case 'mineGold':
-      if(this.state.gold - this.state.goldSub - 2 >= 0){
+      if(gold - goldSub - 2 >= 0){
         this.setState({goldSub: goldSub + 1})
         return true
       }
     case 'fishing':
-      if(this.state.gold - this.state.goldSub - 2 >= 0) {
+      if(gold - goldSub - 2 >= 0) {
       this.setState({goldSub: goldSub + 3})
       return true
     }
     case 'bakeBread':
-      if(this.state.gold - this.state.goldSub - 2 >= 0){
+      if(gold - goldSub - 2 >= 0){
       this.setState({goldSub: goldSub + 2})
       return true
     }
@@ -155,16 +160,18 @@ assignWorker = e => {
 }
 
 addWorker = () => {
-  const { workForce } = this.state;
-  const worker = {
-    name:Math.round(Math.random() * 100000000),
-    workLoad: 3,
-    currentAction: null,
-    reward: Map({})
+  if(this.payForTask('hireWorker')){
+    const { workForce } = this.state;
+    const worker = {
+      name:Math.round(Math.random() * 100000000),
+      workLoad: 3,
+      currentAction: null,
+      reward: Map({})
+    }
+    this.setState({
+      workForce: workForce.push(fromJS(worker))
+    })
   }
-  this.setState({
-    workForce: workForce.push(fromJS(worker))
-  })
 }
 
   decreaseWorkload = workForceObject => {
