@@ -1,19 +1,21 @@
 import React, { Component } from "react";
-import { List, fromJS } from "immutable";
+import { List, fromJS, Map } from "immutable";
+import classNames from "classnames"
 import "./App.css";
 
 export default class Clock extends Component {
   state = {
+    workerCost: 1,
     time: 0,
     fish: 0,
-    bread: 50,
-    gold: 0,
+    bread: 0,
+    gold: 15,
+    // goldAdd: 0,
+    // fishAdd: 0,
+    // breadAdd: 0,
     fishMod: 1,
     breadMod: 1,
-    goldMod: 0,
-    fishAdd: 0,
-    breadAdd: 0,
-    goldAdd: 0,
+    goldMod: 1,
     fishSub: 0,
     breadSub: 0,
     goldSub: 0,
@@ -43,78 +45,122 @@ availableActions = fromJS([
     actionName: 'mineGold'
   },
  {
-    name: 'Make Bread',
+    name: 'Bake Bread',
     difficulty: 2,
     actionName: 'bakeBread'
   }
 ])
 
+finishTask = worker => {
+  switch(worker.get('task')){
+    case 'mineGold':
+      return worker.set('task', null).set('reward', Map({type: 'gold', amount: 5}))
+    case 'fishing':
+      console.log(worker.set('task', null).set('reward', Map({type: 'fish', amount: 10})), 'fisher')
+      return worker.set('task', null).set('reward', Map({type: 'fish', amount: 10}))
+    case 'bakeBread':
+      return worker.set('task', null).set('reward', Map({type: 'bread', amount: 15}))
+    default:
+      return worker
+  }
+}
 
-  mineGold = () => {
-    const { bread } = this.state;
-    // console.log("mine");
-    if (bread >= 4) {
-      this.setState({
-        goldAdd: Math.floor(Math.random() * 2),
-        breadSub: 4
-      });
-    } else {
-      this.setState({
-        warningCount: 4,
-        warningMessage: "bread credit declined"
-      });
-      // console.log();
+
+
+
+
+  // mineGold = () => {
+  //   const { bread } = this.state;
+  //   // console.log("mine");
+  //   if (bread >= 4) {
+  //     this.setState({
+  //       goldAdd: Math.floor(Math.random() * 2),
+  //       breadSub: 4
+  //     });
+  //   } else {
+  //     this.setState({
+  //       warningCount: 4,
+  //       warningMessage: "bread credit declined"
+  //     });
+  //     // console.log();
+  //   }
+  // };
+  // goFishing = () => {
+  //   const { gold } = this.state;
+  //   // console.log("fish");
+  //   if (gold >= 1) {
+  //     this.setState({
+  //       fishAdd: Math.round(Math.random() * 5),
+  //       goldSub: 1
+  //     });
+  //   } else {
+  //     this.setState({
+  //       warningCount: 4,
+  //       warningMessage: "Your gold reserves are too low"
+  //     });
+  //   }
+  // };
+  // bakeBread = () => {
+  //   const { fish } = this.state;
+  //   // console.log("bread");
+  //   if (fish >= 4) {
+  //     this.setState({
+  //       breadAdd: Math.round(Math.random() * 10),
+  //       fishSub: 4
+  //     });
+  //   } else {
+  //     this.setState({
+  //       warningCount: 4,
+  //       warningMessage: "Go fish"
+  //     });
+  //   }
+  // };
+
+payForTask = task => {
+  const {gold, goldSub} = this.state
+  switch(task){
+    case 'mineGold':
+      if(this.state.gold - this.state.goldSub - 2 >= 0){
+        this.setState({goldSub: goldSub + 1})
+        return true
+      }
+    case 'fishing':
+      if(this.state.gold - this.state.goldSub - 2 >= 0) {
+      this.setState({goldSub: goldSub + 3})
+      return true
     }
-  };
-  goFishing = () => {
-    const { gold } = this.state;
-    // console.log("fish");
-    if (gold >= 1) {
-      this.setState({
-        fishAdd: Math.round(Math.random() * 5),
-        goldSub: 1
-      });
-    } else {
-      this.setState({
-        warningCount: 4,
-        warningMessage: "Your gold reserves are too low"
-      });
+    case 'bakeBread':
+      if(this.state.gold - this.state.goldSub - 2 >= 0){
+      this.setState({goldSub: goldSub + 2})
+      return true
     }
-  };
-  bakeBread = () => {
-    const { fish } = this.state;
-    // console.log("bread");
-    if (fish >= 4) {
-      this.setState({
-        breadAdd: Math.round(Math.random() * 10),
-        fishSub: 4
-      });
-    } else {
-      this.setState({
-        warningCount: 4,
-        warningMessage: "Go fish"
-      });
-    }
-  };
+    default:
+      return false
+  }
+}
+
 
 assignWorker = e => {
+  if(this.payForTask(e.target.getAttribute('task'))){
   const {workForce} = this.state;
-  console.log(e.target.getAttribute('workername'), 'workForce')
+  console.log(e.target.getAttribute('task'), 'workForce')
   const workerIndex = workForce.findIndex(x => x.get('name') === parseInt(e.target.getAttribute('workername')))
   const updatedWorkForce =
   workForce
   .setIn([workerIndex, 'task'], e.target.getAttribute('task'))
   .setIn([workerIndex, 'workLoad'], parseInt(e.target.getAttribute('difficulty')))
   // console.log(updatedWorkForce.toJS(), 'updatedWorkForce')
-  this.setState({workForce: updatedWorkForce})
+  this.setState({workForce: updatedWorkForce, detailWorker:null})
+}
 }
 
 addWorker = () => {
   const { workForce } = this.state;
   const worker = {
     name:Math.round(Math.random() * 100000000),
-    workLoad: 10,
+    workLoad: 3,
     currentAction: null,
+    reward: Map({})
   }
   this.setState({
     workForce: workForce.push(fromJS(worker))
@@ -126,7 +172,7 @@ addWorker = () => {
     if (workForceObject.size) {
       // console.log(workForceObject.toJS(), 'decrease')
       return workForceObject.map(
-        x => (x.get("workLoad") ? x.set("workLoad", x.get("workLoad") - 1) : x)
+        x => (x.get("workLoad") ? x.set("workLoad", x.get("workLoad") - 1) : this.finishTask(x))
       );
     } else {
       return workForceObject;
@@ -135,7 +181,7 @@ addWorker = () => {
 
 workerCollectionGenerator = () => {
   const { workForce, detailWorker } = this.state;
-  console.log(detailWorker, 'generator')
+  // console.log(detailWorker, 'generator')
   const menu = worker => (
       <div className="col s12">
           {this.availableActions.map(action =>
@@ -182,9 +228,9 @@ workerCollectionGenerator = () => {
             <a
               onClick={this.setDetailWorker}
               name={x.get("name")}
-              className="waves-effect waves-light btn"
+              className={classNames("waves-effect waves-light btn", {disabled: x.get('workLoad')})}
             >
-              {x.get("actionName") ? x.get("actionName") : "Assign"}
+              {x.get("workLoad") ? x.get("task") || 'Busy' : "Assign"}
             </a>
           )}
         </p>
@@ -208,13 +254,10 @@ workerCollectionGenerator = () => {
     const {
       time,
       fish,
-      fishAdd,
       fishMod,
       bread,
-      breadAdd,
       breadMod,
       gold,
-      goldAdd,
       goldMod,
       breadSub,
       fishSub,
@@ -222,11 +265,15 @@ workerCollectionGenerator = () => {
       warningCount,
       workForce
     } = this.state;
+
+    const workForceRewards = workForce.map(x => x.get('reward'))
+      // console.log(workForceRewards.toJS(), 'workforce rewards')
+
     this.setState({
       time: time + 1,
-      fish: fish + fishAdd * fishMod - fishSub,
-      bread: bread + breadAdd * breadMod - breadSub,
-      gold: gold + goldAdd * goldMod - goldSub,
+      fish: workForceRewards.filter(f => f.get('type') === 'fish').reduce((x, y) => x + y.get('amount'), fish) * fishMod - fishSub,
+      bread: workForceRewards.filter(b => b.get('type') === 'bread').reduce((x, y) => x + y.get('amount'), bread) * breadMod - breadSub,
+      gold: workForceRewards.filter(g => g.get('type') === 'gold').reduce((x, y) => x + y.get('amount'), gold) * goldMod - goldSub,
       fishAdd: 0,
       breadAdd: 0,
       goldAdd: 0,
@@ -234,10 +281,9 @@ workerCollectionGenerator = () => {
       breadSub: 0,
       goldSub: 0,
       warningCount: warningCount ? warningCount - 1 : 0,
-      workForce: this.decreaseWorkload(workForce)
+      workForce: this.decreaseWorkload(workForce.map(x => x.set('reward', Map({}))))
     });
   };
-
 
   render(){
     // console.log('render')
@@ -248,6 +294,9 @@ workerCollectionGenerator = () => {
       fish,
       bread,
       gold,
+      fishMod,
+      goldMod,
+      breadMod,
       workForce,
       detailWorker
     } = this.state;
@@ -263,16 +312,54 @@ workerCollectionGenerator = () => {
           </div>
         ) : null}
 
-        <h1>Resource Game {workForce ? workForce.size : 0}</h1>
+        <h1>Resource Game</h1>
         <a className="waves-effect waves-light btn" onClick={this.addWorker}>
           Create Worker
         </a>
-        {/* <a className="waves-effect waves-light btn" onClick={this.mineGold}>Mine Gold</a>
-      <a className="waves-effect waves-light btn" onClick={this.goFishing}>Go Fishing</a>
-      <a className="waves-effect waves-light btn" onClick={this.bakeBread}>Bake Bread</a>
-      <a className="waves-effect waves-light btn" onClick={this.addWorker}>Create Worker</a> */}
 
-        <div className="row">
+        <table className="striped centered">
+  <thead>
+    <tr>
+        <th>Resource</th>
+        <th>Held</th>
+        <th>Bonus</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>Time</td>
+      <td>{time}</td>
+      <td>{0}</td>
+    </tr>
+    <tr>
+      <td>Gold</td>
+      <td>{gold}</td>
+      <td>{goldMod}</td>
+    </tr>
+    <tr>
+      <td>Fish</td>
+      <td>{fish}</td>
+      <td>{fishMod}</td>
+    </tr>
+    <tr>
+      <td>Bread</td>
+      <td>{bread}</td>
+      <td>{breadMod}</td>
+    </tr>
+  </tbody>
+</table>
+
+{workForce.size ? (
+  <div className="collection col s12">
+    {this.workerCollectionGenerator()}
+  </div>
+) : null}
+
+
+
+
+        {/* <div className="row">
           <div className="col s4">
             <h1>Time</h1>
             <h3>{time}</h3>
@@ -297,56 +384,8 @@ workerCollectionGenerator = () => {
               {this.workerCollectionGenerator()}
             </div>
           ) : null}
-        </div>
+        </div> */}
       </div>
     );
   }
 }
-
-
-
-//
-// const worker = {
-//   workLoad: 0,
-//   currentAction: null,
-// }
-//
-// const workerA = {
-//   workLoad: 0,
-//   currentAction: null,
-// }
-//
-// const workerB = {
-//   workLoad: 0,
-//   currentAction: null,
-// }
-//
-// const workerC = {
-//   workLoad: 0,
-//   currentAction: null,
-// }
-//
-// workforce = [workerA, workerB, workerC]
-//
-// setState {workForce: workforce.getIn([0, 'workLoad'])}
-//
-// actionArray = workforce.map(worker => worker.currentAction)
-//
-// ['fishing', 'mining', 'fishing']
-//
-//
-//
-// const availableActions = {
-//   fishing: {
-//     name: 'Go Fishing',
-//     difficulty: 3,
-//   },
-//   goldMining:{
-//     name: 'Mine Gold',
-//     difficulty: 5
-//   },
-//   bread: {
-//     name: 'Make Bread',
-//     difficulty: 2,
-//   }
-// }
