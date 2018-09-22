@@ -33,7 +33,7 @@
     "client": "webpack-dev-server --mode development --devtool inline-source-map --hot",
     "server": "nodemon server.js",
     "dev": "concurrently \"npm run client\" \"npm run watch\"",
-    "prod": "webpack --mode production",
+    "prod": "concurrently \"webpack --mode production\" \"npm run server\"",
     "watch": "webpack -w"
   }
 }

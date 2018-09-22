@@ -3,11 +3,12 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const outputDirectory = "dist";
 module.exports = {
-  entry: "./src/index.js",
+  entry: "./src",
+  // entry: "./views/base.ejs",
   output: {
     path: path.join(__dirname, outputDirectory),
     filename: "bundle.js",
-    publicPath: '/public/',
+    // publicPath: '/public/',
   },
   watch: true,
   resolve: { extensions: [".js"] },
@@ -53,9 +54,9 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin([outputDirectory]),
     new HtmlWebpackPlugin({
-      filename: "./public/index.html",
+      filename: "./index.html",
       // template: "./public/index.html",
-      favicon: "./public/favicon.ico",
+      // favicon: "./favicon.ico",
       template: "./views/base.ejs",
     })
   ]
