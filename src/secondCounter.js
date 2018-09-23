@@ -10,9 +10,9 @@ export default class Clock extends Component {
     fish: 0,
     bread: 0,
     gold: 15,
-    // goldAdd: 0,
-    // fishAdd: 0,
-    // breadAdd: 0,
+    goldAdd: 0,
+    fishAdd: 0,
+    breadAdd: 0,
     fishMod: 1,
     breadMod: 1,
     goldMod: 1,
@@ -23,7 +23,9 @@ export default class Clock extends Component {
     warningCount: 0,
     working: List(),
     workForce: List(),
-    detailWorker: null
+    detailWorker: null,
+    breadValue: 1,
+    fishValue: 1,
   };
 
 componentDidMount() {
@@ -115,6 +117,32 @@ finishTask = worker => {
   //     });
   //   }
   // };
+
+handleExchangeResource = e => {
+  this.exchangeGoods(e.target.getAttribute('good'), parseInt(e.target.getAttribute('price')), e.target.getAttribute('actionType'), 5)
+}
+
+
+exchangeGoods = (good, cost, action, amount) => {
+  const {gold, goldAdd, goldSub} = this.state
+  if(action === 'buy'){
+    console.log(goldSub, cost, `${good}Add`)
+    if(cost <= gold){
+      const modifiers = {goldSub : cost + goldSub}
+      modifiers[`${good}Add`] = amount + fromJS(this.state).get(`${good}Add`)
+      this.setState(modifiers)
+    }
+  }
+  else if(action === 'sell'){
+    // console.log(good, cost, action, amount)
+    if(cost <= fromJS(this.state).get(good)){
+      const modifiers = {goldAdd : cost + goldAdd}
+      modifiers[`${good}Sub`] = amount + fromJS(this.state).get(`${good}Sub`)
+      this.setState(modifiers)
+    }
+  }
+}
+
 
 payForTask = task => {
   const {gold, goldSub, workerCost} = this.state
@@ -269,6 +297,9 @@ workerCollectionGenerator = () => {
       breadSub,
       fishSub,
       goldSub,
+      breadAdd,
+      fishAdd,
+      goldAdd,
       warningCount,
       workForce
     } = this.state;
@@ -278,9 +309,9 @@ workerCollectionGenerator = () => {
 
     this.setState({
       time: time + 1,
-      fish: workForceRewards.filter(f => f.get('type') === 'fish').reduce((x, y) => x + y.get('amount'), fish) * fishMod - fishSub,
-      bread: workForceRewards.filter(b => b.get('type') === 'bread').reduce((x, y) => x + y.get('amount'), bread) * breadMod - breadSub,
-      gold: workForceRewards.filter(g => g.get('type') === 'gold').reduce((x, y) => x + y.get('amount'), gold) * goldMod - goldSub,
+      fish: workForceRewards.filter(f => f.get('type') === 'fish').reduce((x, y) => x + y.get('amount'), fish) * fishMod - fishSub + fishAdd,
+      bread: workForceRewards.filter(b => b.get('type') === 'bread').reduce((x, y) => x + y.get('amount'), bread) * breadMod - breadSub + breadAdd,
+      gold: workForceRewards.filter(g => g.get('type') === 'gold').reduce((x, y) => x + y.get('amount'), gold) * goldMod - goldSub + goldAdd,
       fishAdd: 0,
       breadAdd: 0,
       goldAdd: 0,
@@ -305,14 +336,16 @@ workerCollectionGenerator = () => {
       goldMod,
       breadMod,
       workForce,
-      detailWorker
+      detailWorker,
+      breadValue,
+      fishValue,
     } = this.state;
 
     // console.log(detailWorker, 'detailWorker')
     // console.log(workForce ? workForce : null)
 
     return (
-      <div>
+      <div className="row">
         {warningCount ? (
           <div className="card-panel red dark-2 warning-card center-align">
             <h1 className="white-text">{warningMessage}</h1>
@@ -321,10 +354,11 @@ workerCollectionGenerator = () => {
 
         <h1>Resource Game</h1>
         <a className="waves-effect waves-light btn" onClick={this.addWorker}>
-          Create Worker
+          Hire Worker
         </a>
 
-        <table className="striped centered">
+{/* <h4 className="col s12">Player Resources</h4> */}
+<table className="striped centered col s6">
   <thead>
     <tr>
         <th>Resource</th>
@@ -358,40 +392,51 @@ workerCollectionGenerator = () => {
 </table>
 
 {workForce.size ? (
-  <div className="collection col s12">
+  <div className="collection col s6">
     {this.workerCollectionGenerator()}
   </div>
 ) : null}
 
+<table className="striped centered col s6">
+<thead>
+<tr>
+<th>Resource</th>
+<th>Value</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Fish</td>
+<td>{fishValue}</td>
+<td>
+  <a className="waves-effect waves-light btn" price={fishValue} good="fish" actionType="buy" onClick={this.handleExchangeResource}>
+    Buy Fish
+  </a>
+  <a className="waves-effect waves-light btn" price={fishValue} good="fish" actionType="sell" onClick={this.handleExchangeResource}>
+    Sell Fish
+  </a>
+</td>
+</tr>
+<tr>
+<td>Bread</td>
+<td>{breadValue}</td>
+<td>
+  <a className="waves-effect waves-light btn" price={breadValue} good='bread' actionType="buy" onClick={this.handleExchangeResource}>
+    Buy Bread
+  </a>
+  <a className="waves-effect waves-light btn" price={breadValue} good='bread' actionType="sell" onClick={this.handleExchangeResource}>
+    Sell Bread
+  </a>
+</td>
+</tr>
+</tbody>
+</table>
 
 
 
-        {/* <div className="row">
-          <div className="col s4">
-            <h1>Time</h1>
-            <h3>{time}</h3>
-          </div>
 
-          <div className="col s4">
-            <h1>Fish</h1>
-            <h3>{fish}</h3>
-          </div>
-
-          <div className="col s4">
-            <h1>Bread</h1>
-            <h3>{bread}</h3>
-          </div>
-
-          <div className="col s4">
-            <h1>Gold</h1>
-            <h3>{gold}</h3>
-          </div>
-          {workForce.size ? (
-            <div className="collection col s12">
-              {this.workerCollectionGenerator()}
-            </div>
-          ) : null}
-        </div> */}
       </div>
     );
   }
