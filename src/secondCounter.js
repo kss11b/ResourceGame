@@ -26,6 +26,8 @@ export default class Clock extends Component {
     detailWorker: null,
     breadValue: 1,
     fishValue: 1,
+    breadMarket: 0,
+    fishMarket: 0,
   };
 
 componentDidMount() {
@@ -118,6 +120,11 @@ finishTask = worker => {
   //   }
   // };
 
+
+calculateMarketDynamics = () =>  {
+    return Math.round(Math.random()) ? 1 : -1
+}
+
 handleExchangeResource = e => {
   this.exchangeGoods(e.target.getAttribute('good'), parseInt(e.target.getAttribute('price')), e.target.getAttribute('actionType'), 5)
 }
@@ -127,17 +134,25 @@ exchangeGoods = (good, cost, action, amount) => {
   const {gold, goldAdd, goldSub} = this.state
   if(action === 'buy'){
     console.log(goldSub, cost, `${good}Add`)
-    if(cost <= gold){
+    if(cost <= gold - goldSub ){
       const modifiers = {goldSub : cost + goldSub}
+      if( fromJS(this.state).get(`${good}Value`) > 0){
+        modifiers[`${good}Market`] = fromJS(this.state).get(`${good}Market`) + 1
+      }
       modifiers[`${good}Add`] = amount + fromJS(this.state).get(`${good}Add`)
+      console.log(modifiers, fromJS(this.state).get(`${good}Market`),     'buy modifiers')
       this.setState(modifiers)
     }
   }
   else if(action === 'sell'){
     // console.log(good, cost, action, amount)
-    if(cost <= fromJS(this.state).get(good)){
+    if(cost <= fromJS(this.state).get(good) - fromJS(this.state).get(`${good}Sub`)){
       const modifiers = {goldAdd : cost + goldAdd}
+    if( fromJS(this.state).get(`${good}Value`) > 1){
+        modifiers[`${good}Market`] = fromJS(this.state).get(`${good}Market`) - 1
+      }
       modifiers[`${good}Sub`] = amount + fromJS(this.state).get(`${good}Sub`)
+      console.log(modifiers, fromJS(this.state).get(`${good}Market`),     'sell modifiers')
       this.setState(modifiers)
     }
   }
@@ -301,12 +316,17 @@ workerCollectionGenerator = () => {
       fishAdd,
       goldAdd,
       warningCount,
-      workForce
+      workForce,
+      breadValue,
+      fishValue,
+      breadMarket,
+      fishMarket,
     } = this.state;
-
+console.log(fishMarket, breadMarket, 'market')
     const workForceRewards = workForce.map(x => x.get('reward'))
       // console.log(workForceRewards.toJS(), 'workforce rewards')
-
+    const breadCalculation = time % 10 ? breadValue + breadMarket: (breadValue > 1 ? breadValue + this.calculateMarketDynamics() + breadMarket : breadValue + 1 + breadMarket) 
+    const fishCalculation = time % 10 ? fishValue + fishMarket: (fishValue > 1 ? fishValue + this.calculateMarketDynamics() + fishMarket: fishValue + 1)
     this.setState({
       time: time + 1,
       fish: workForceRewards.filter(f => f.get('type') === 'fish').reduce((x, y) => x + y.get('amount'), fish) * fishMod - fishSub + fishAdd,
@@ -318,6 +338,10 @@ workerCollectionGenerator = () => {
       fishSub: 0,
       breadSub: 0,
       goldSub: 0,
+      breadMarket: 0,
+      fishMarket: 0,
+      breadValue: breadCalculation,
+      fishValue: fishCalculation,
       warningCount: warningCount ? warningCount - 1 : 0,
       workForce: this.decreaseWorkload(workForce.map(x => x.set('reward', Map({}))))
     });
