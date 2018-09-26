@@ -291,6 +291,19 @@ workerCollectionGenerator = () => {
   )
 }
 
+  generateNewTradeCarts = () => {
+    const {tradeCarts} = this.state;
+    const updatedTradeCarts = tradeCarts.map(x => {
+    const resourceTypes = List(['gold', 'fish', 'bread'])
+    const askingIndex = Math.floor(Math.random()*resource.length)
+    const modifiedResourceTypes = resourceTypes.remove(askingIndex)
+    const givingIndex = Math.floor(Math.random()*resource.length)
+    return x.set('asking', resourceTypes.get(askingIndex)
+            .set('giving', modifiedResourceTypes.get(givingIndex))
+            .set('amount', Math.floor(Math.random*8))
+    }
+  }
+
   setDetailWorker = e => {
     // console.log(e.target.name, 'target')
     this.setState({ detailWorker: e.target.name });
