@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { List, fromJS, Map } from "immutable";
-import classNames from "classnames"
+import classNames from "classnames";
 import "./App.css";
 
 export default class Clock extends Component {
@@ -28,6 +28,7 @@ export default class Clock extends Component {
     fishValue: 1,
     breadMarket: 0,
     fishMarket: 0,
+    tradeCarts: List([])
   };
 
 componentDidMount() {
@@ -294,15 +295,19 @@ workerCollectionGenerator = () => {
   generateNewTradeCarts = () => {
     const {tradeCarts} = this.state;
     const updatedTradeCarts = tradeCarts.map(x => {
-    const resourceTypes = List(['gold', 'fish', 'bread'])
-    const askingIndex = Math.floor(Math.random()*resource.length)
-    const modifiedResourceTypes = resourceTypes.remove(askingIndex)
-    const givingIndex = Math.floor(Math.random()*resource.length)
-    return x.set('asking', resourceTypes.get(askingIndex)
+
+    const resourceTypes = List(['gold', 'fish', 'bread']);
+    const askingIndex = Math.floor(Math.random()*resource.length);
+    const modifiedResourceTypes = resourceTypes.remove(askingIndex);
+    const givingIndex = Math.floor(Math.random()*resource.length);
+
+    return x.set('asking', resourceTypes.get(askingIndex))
             .set('giving', modifiedResourceTypes.get(givingIndex))
-            .set('amount', Math.floor(Math.random*8))
-    }
-  }
+            .set('amount', Math.floor(Math.random()*8))
+      
+    })
+    return updatedTradeCarts
+  }  
 
   setDetailWorker = e => {
     // console.log(e.target.name, 'target')
@@ -334,6 +339,7 @@ workerCollectionGenerator = () => {
       fishValue,
       breadMarket,
       fishMarket,
+      tradeCarts,
     } = this.state;
 console.log(fishMarket, breadMarket, 'market')
     const workForceRewards = workForce.map(x => x.get('reward'))
@@ -356,7 +362,8 @@ console.log(fishMarket, breadMarket, 'market')
       breadValue: breadCalculation,
       fishValue: fishCalculation,
       warningCount: warningCount ? warningCount - 1 : 0,
-      workForce: this.decreaseWorkload(workForce.map(x => x.set('reward', Map({}))))
+      workForce: this.decreaseWorkload(workForce.map(x => x.set('reward', Map({})))),
+      tradeCarts: (time + 1) % 10 ? this.generateNewTradeCarts() : tradeCarts
     });
   };
 
