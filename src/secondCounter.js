@@ -28,7 +28,7 @@ export default class Clock extends Component {
     fishValue: 1,
     breadMarket: 0,
     fishMarket: 0,
-    tradeCarts: List([])
+    tradeCarts: List([Map(), Map(), Map()])
   };
 
 componentDidMount() {
@@ -297,17 +297,18 @@ workerCollectionGenerator = () => {
     const updatedTradeCarts = tradeCarts.map(x => {
 
     const resourceTypes = List(['gold', 'fish', 'bread']);
-    const askingIndex = Math.floor(Math.random()*resource.length);
+    const askingIndex = Math.floor(Math.random()*resourceTypes.length);
     const modifiedResourceTypes = resourceTypes.remove(askingIndex);
-    const givingIndex = Math.floor(Math.random()*resource.length);
-
+    const givingIndex = Math.floor(Math.random()*modifiedResourceTypes.length);
+    // console.log(resourceTypes, askingIndex, modifiedResourceTypes, givingIndex, 'indexes')
     return x.set('asking', resourceTypes.get(askingIndex))
             .set('giving', modifiedResourceTypes.get(givingIndex))
             .set('amount', Math.floor(Math.random()*8))
-      
     })
+    // console.log(tradeCarts, 'tradeCarts')
+    // console.log(updatedTradeCarts.toJS(), 'updated trade carts')
     return updatedTradeCarts
-  }  
+  }
 
   setDetailWorker = e => {
     // console.log(e.target.name, 'target')
@@ -341,10 +342,10 @@ workerCollectionGenerator = () => {
       fishMarket,
       tradeCarts,
     } = this.state;
-console.log(fishMarket, breadMarket, 'market')
+// console.log(fishMarket, breadMarket, 'market')
     const workForceRewards = workForce.map(x => x.get('reward'))
       // console.log(workForceRewards.toJS(), 'workforce rewards')
-    const breadCalculation = time % 10 ? breadValue + breadMarket: (breadValue > 1 ? breadValue + this.calculateMarketDynamics() + breadMarket : breadValue + 1 + breadMarket) 
+    const breadCalculation = time % 10 ? breadValue + breadMarket: (breadValue > 1 ? breadValue + this.calculateMarketDynamics() + breadMarket : breadValue + 1 + breadMarket)
     const fishCalculation = time % 10 ? fishValue + fishMarket: (fishValue > 1 ? fishValue + this.calculateMarketDynamics() + fishMarket: fishValue + 1)
     this.setState({
       time: time + 1,
@@ -363,11 +364,13 @@ console.log(fishMarket, breadMarket, 'market')
       fishValue: fishCalculation,
       warningCount: warningCount ? warningCount - 1 : 0,
       workForce: this.decreaseWorkload(workForce.map(x => x.set('reward', Map({})))),
-      tradeCarts: (time + 1) % 10 ? this.generateNewTradeCarts() : tradeCarts
+      tradeCarts: (time + 1) % 5 ? this.generateNewTradeCarts() : tradeCarts
     });
   };
 
   render(){
+    // console.log(this.generateNewTradeCarts().toJS(), 'generate trade carts')
+    this.generateNewTradeCarts()
     // console.log('render')
     const {
       warningMessage,
@@ -383,10 +386,12 @@ console.log(fishMarket, breadMarket, 'market')
       detailWorker,
       breadValue,
       fishValue,
+      tradeCarts,
     } = this.state;
 
     // console.log(detailWorker, 'detailWorker')
     // console.log(workForce ? workForce : null)
+    // console.log(tradeCarts.toJS(), 'tradeCarts')
 
     return (
       <div className="row">
@@ -478,6 +483,44 @@ console.log(fishMarket, breadMarket, 'market')
 </tbody>
 </table>
 
+
+
+{/* <table className="striped centered col s6">
+<thead>
+<tr>
+<th>Resource</th>
+<th>Value</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Fish</td>
+<td>{fishValue}</td>
+<td>
+  <a className="waves-effect waves-light btn" price={fishValue} good="fish" actionType="buy" onClick={this.handleExchangeResource}>
+    Buy Fish
+  </a>
+  <a className="waves-effect waves-light btn" price={fishValue} good="fish" actionType="sell" onClick={this.handleExchangeResource}>
+    Sell Fish
+  </a>
+</td>
+</tr>
+<tr>
+<td>Bread</td>
+<td>{breadValue}</td>
+<td>
+  <a className="waves-effect waves-light btn" price={breadValue} good='bread' actionType="buy" onClick={this.handleExchangeResource}>
+    Buy Bread
+  </a>
+  <a className="waves-effect waves-light btn" price={breadValue} good='bread' actionType="sell" onClick={this.handleExchangeResource}>
+    Sell Bread
+  </a>
+</td>
+</tr>
+</tbody>
+</table> */}
 
 
 
