@@ -297,10 +297,10 @@ workerCollectionGenerator = () => {
     const updatedTradeCarts = tradeCarts.map(x => {
 
     const resourceTypes = List(['gold', 'fish', 'bread']);
-    const askingIndex = Math.floor(Math.random()*resourceTypes.length);
+    const askingIndex = Math.floor(Math.random()*resourceTypes.size);
     const modifiedResourceTypes = resourceTypes.remove(askingIndex);
-    const givingIndex = Math.floor(Math.random()*modifiedResourceTypes.length);
-    // console.log(resourceTypes, askingIndex, modifiedResourceTypes, givingIndex, 'indexes')
+    const givingIndex = Math.floor(Math.random()*modifiedResourceTypes.size);
+    // console.log(resourceTypes.length, resourceTypes, askingIndex, modifiedResourceTypes, givingIndex, 'indexes')
     return x.set('asking', resourceTypes.get(askingIndex))
             .set('giving', modifiedResourceTypes.get(givingIndex))
             .set('amount', Math.floor(Math.random()*8))
@@ -364,13 +364,13 @@ workerCollectionGenerator = () => {
       fishValue: fishCalculation,
       warningCount: warningCount ? warningCount - 1 : 0,
       workForce: this.decreaseWorkload(workForce.map(x => x.set('reward', Map({})))),
-      tradeCarts: (time + 1) % 5 ? this.generateNewTradeCarts() : tradeCarts
+      tradeCarts: (time + 1) % 10 ? tradeCarts : this.generateNewTradeCarts() 
     });
   };
 
   render(){
     // console.log(this.generateNewTradeCarts().toJS(), 'generate trade carts')
-    this.generateNewTradeCarts()
+    // this.generateNewTradeCarts()
     // console.log('render')
     const {
       warningMessage,
@@ -485,42 +485,29 @@ workerCollectionGenerator = () => {
 
 
 
-{/* <table className="striped centered col s6">
+ <table className="striped centered col s6">
 <thead>
 <tr>
-<th>Resource</th>
-<th>Value</th>
-<th>Actions</th>
+<th>Asking</th>
+<th>Giving</th>
+<th>Amount</th>
 </tr>
 </thead>
 
 <tbody>
+{tradeCarts.map(x => (
 <tr>
-<td>Fish</td>
-<td>{fishValue}</td>
+<td>{x.get('asking')}</td>
+<td>{x.get('giving')}</td>
 <td>
-  <a className="waves-effect waves-light btn" price={fishValue} good="fish" actionType="buy" onClick={this.handleExchangeResource}>
-    Buy Fish
-  </a>
-  <a className="waves-effect waves-light btn" price={fishValue} good="fish" actionType="sell" onClick={this.handleExchangeResource}>
-    Sell Fish
+  <a className="waves-effect waves-light btn">
+    Trade {x.get('amount')}
   </a>
 </td>
 </tr>
-<tr>
-<td>Bread</td>
-<td>{breadValue}</td>
-<td>
-  <a className="waves-effect waves-light btn" price={breadValue} good='bread' actionType="buy" onClick={this.handleExchangeResource}>
-    Buy Bread
-  </a>
-  <a className="waves-effect waves-light btn" price={breadValue} good='bread' actionType="sell" onClick={this.handleExchangeResource}>
-    Sell Bread
-  </a>
-</td>
-</tr>
+))}
 </tbody>
-</table> */}
+</table> 
 
 
 
