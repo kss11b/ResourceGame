@@ -4,7 +4,7 @@ export default class TradeCarts extends Component {
     render() {
         const { tradeCarts } = this.props;
         return (
-            <table className="striped centered col s12">
+            <table className="striped centered ">
                 <thead>
                     <tr>
                         <th>Asking</th>
@@ -16,8 +16,8 @@ export default class TradeCarts extends Component {
                 <tbody>
                     {tradeCarts.map(x => (
                         <tr>
-                            <td>{x.get('asking')}</td>
-                            <td>{x.get('giving')}</td>
+                            <td>{`${x.get('askingAmount')} ${x.get('asking')}`}</td>
+                            <td>{`${x.get('givingAmount')} ${x.get('giving')}`}</td>
                             <td>
                                 <a className="waves-effect waves-light btn">
                                     Trade {x.get('amount')}

@@ -233,7 +233,8 @@ export default class Clock extends Component {
             return x
                 .set('asking', resourceTypes.get(askingIndex))
                 .set('giving', modifiedResourceTypes.get(givingIndex))
-                .set('amount', Math.floor(Math.random() * 8));
+                .set('givingAmount', Math.round(Math.random() * 8 + 1))
+                .set('askingAmount', Math.round(Math.random() * 8 + 1))
         });
         // console.log(tradeCarts, 'tradeCarts')
         // console.log(updatedTradeCarts.toJS(), 'updated trade carts')
@@ -356,19 +357,7 @@ export default class Clock extends Component {
         } = this.state;
 
         const DisplayItem = () => {
-            if (detailMenu === 'resources' || detailMenu === null) {
-                return (
-                    <ResourceTracker
-                        gold={gold}
-                        goldMod={goldMod}
-                        time={time}
-                        fish={fish}
-                        fishMod={fishMod}
-                        bread={bread}
-                        breadMod={breadMod}
-                    />
-                );
-            } else if (detailMenu === 'workForce') {
+          if (detailMenu === 'workForce') {
                 return (
                     <WorkForce
                         addWorker={this.addWorker}
@@ -389,7 +378,10 @@ export default class Clock extends Component {
                     />
                 );
             } else if (detailMenu === 'tradeCarts') {
-                return <TradeCarts tradeCarts={tradeCarts} />;
+                return <TradeCarts
+                  tradeCarts={tradeCarts}
+                  exchangeGoods={this.exchangeGoods}
+                />;
             } else {
                 return <div />;
             }
@@ -397,6 +389,7 @@ export default class Clock extends Component {
 
         return (
             <div className="row">
+              <div className="col s12">
                 {warningCount ? (
                     <div className="card-panel red dark-2 warning-card center-align">
                         <h1 className="white-text">{warningMessage}</h1>
@@ -405,21 +398,12 @@ export default class Clock extends Component {
 
                 <a
                     onClick={this.setDetailMenu}
-                    name="resources"
-                    className={classNames('waves-effect waves-light btn', {
-                        disabled: detailMenu === 'resources '
-                    })}
-                >
-                    Resources
-                </a>
-                <a
-                    onClick={this.setDetailMenu}
                     name="market"
                     className={classNames('waves-effect waves-light btn', {
                         disabled: detailMenu === 'market'
                     })}
                 >
-                    Workforce
+                    Market
                 </a>
                 <a
                     onClick={this.setDetailMenu}
@@ -428,7 +412,7 @@ export default class Clock extends Component {
                         disabled: detailMenu === 'workForce'
                     })}
                 >
-                    work
+                    Workforce
                 </a>
                 <a
                     onClick={this.setDetailMenu}
@@ -439,8 +423,23 @@ export default class Clock extends Component {
                 >
                     TradeCarts
                 </a>
+              </div>
+              <div className="col s6">
+                <ResourceTracker
 
-                <DisplayItem />
+                    gold={gold}
+                    goldMod={goldMod}
+                    time={time}
+                    fish={fish}
+                    fishMod={fishMod}
+                    bread={bread}
+                    breadMod={breadMod}
+                />
+              </div>
+              <div className="col s6">
+                <DisplayItem/>
+              </div>
+
             </div>
         );
     }

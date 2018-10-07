@@ -14,7 +14,7 @@ export default class Workforce extends Component {
         } = this.props;
         // console.log(detailWorker, 'generator')
         const menu = worker => (
-            <div className="col s12">
+            <div >
                 {availableActions.map(action => (
                     <a
                         name={worker.get('name')}
@@ -67,12 +67,12 @@ export default class Workforce extends Component {
     render() {
         const { workForce, addWorker } = this.props;
         return (
-            <div>
+            <div className="col-s6">
                 <a className="waves-effect waves-light btn" onClick={addWorker}>
                     Hire Worker
                 </a>
                 {workForce.size ? (
-                    <div className="collection col s12">
+                    <div className="collection">
                         {this.workerCollectionGenerator()}
                     </div>
                 ) : null}

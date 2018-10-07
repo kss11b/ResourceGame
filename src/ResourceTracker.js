@@ -12,7 +12,7 @@ export default class ResourceTracker extends Component {
             breadMod
         } = this.props;
         return (
-            <table className="striped centered col s12">
+            <table className="striped centered">
                 <thead>
                     <tr>
                         <th>Resource</th>
