@@ -14,15 +14,9 @@ export default class Clock extends Component {
     fish: 0,
     bread: 0,
     gold: 15,
-    goldAdd: 0,
-    fishAdd: 0,
-    breadAdd: 0,
-    fishMod: 1,
-    breadMod: 1,
-    goldMod: 1,
-    fishSub: 0,
-    breadSub: 0,
-    goldSub: 0,
+    fishMod: 0,
+    breadMod: 0,
+    goldMod: 0,
     warningMessage: "",
     warningCount: 0,
     working: List(),
@@ -80,12 +74,6 @@ export default class Clock extends Component {
           .set("task", null)
           .set("reward", Map({ type: "gold", amount: 5 }));
       case "fishing":
-        console.log(
-          worker
-            .set("task", null)
-            .set("reward", Map({ type: "fish", amount: 10 })),
-          "fisher"
-        );
         return worker
           .set("task", null)
           .set("reward", Map({ type: "fish", amount: 10 }));
@@ -112,77 +100,69 @@ export default class Clock extends Component {
   };
 
   exchangeGoods = (good, cost, action, amount) => {
-    const { gold, goldAdd, goldSub } = this.state;
+    const { gold, goldMod } = this.state;
     if (action === "buy") {
-      console.log(goldSub, cost, `${good}Add`);
-      if (cost <= gold - goldSub) {
-        const modifiers = { goldSub: cost + goldSub };
+      // console.log(goldMod, cost, `${good}Mod`);
+      if (cost <= gold + goldMod) {
+        const modifiers = { goldMod: goldMod - cost };
         if (fromJS(this.state).get(`${good}Value`) > 0) {
           modifiers[`${good}Market`] =
             fromJS(this.state).get(`${good}Market`) + 1;
         }
-        modifiers[`${good}Add`] = amount + fromJS(this.state).get(`${good}Add`);
-        console.log(
-          modifiers,
-          fromJS(this.state).get(`${good}Market`),
-          "buy modifiers"
-        );
+        modifiers[`${good}Mod`] = amount + fromJS(this.state).get(`${good}Mod`);
+
         this.setState(modifiers);
       }
     } else if (action === "sell") {
       // console.log(good, cost, action, amount)
       if (
         cost <=
-        fromJS(this.state).get(good) - fromJS(this.state).get(`${good}Sub`)
+        fromJS(this.state).get(good) - fromJS(this.state).get(`${good}Mod`)
       ) {
-        const modifiers = { goldAdd: cost + goldAdd };
+        const modifiers = { goldMod: goldMod + cost };
         if (fromJS(this.state).get(`${good}Value`) > 1) {
           modifiers[`${good}Market`] =
             fromJS(this.state).get(`${good}Market`) - 1;
         }
-        modifiers[`${good}Sub`] = amount + fromJS(this.state).get(`${good}Sub`);
-        console.log(
-          modifiers,
-          fromJS(this.state).get(`${good}Market`),
-          "sell modifiers"
-        );
+        modifiers[`${good}Mod`] = fromJS(this.state).get(`${good}Mod`) - amount;
+
         this.setState(modifiers);
       }
     }
   };
 
   tradeGoods = (give, take, giveAmount, takeAmount) => {
-    const takeKey = `${take}Add`;
-    const giveKey = `${give}Sub`;
+    const takeKey = `${take}Mod`;
+    const giveKey = `${give}Mod`;
     let updatedValues = Map();
-    updatedValues = updatedValues.set(takeKey, takeAmount);
-    updatedValues = updatedValues.set(giveKey, giveAmount);
+    updatedValues = updatedValues.set(giveKey, takeAmount);
+    updatedValues = updatedValues.set(takeKey, -1 * giveAmount);
     console.log(takeKey, giveKey, updatedValues.toJS());
 
     this.setState(updatedValues.toJS());
   };
 
   payForTask = task => {
-    const { gold, goldSub, workerCost } = this.state;
+    const { gold, goldMod, workerCost } = this.state;
     switch (task) {
       case "hireWorker":
-        if (gold - goldSub - workerCost >= 0) {
-          this.setState({ goldSub: goldSub + 1 });
+        if (gold + goldMod - workerCost >= 0) {
+          this.setState({ goldMod: goldMod - 1 });
           return true;
         }
       case "mineGold":
-        if (gold - goldSub - 2 >= 0) {
-          this.setState({ goldSub: goldSub + 1 });
+        if (gold + goldMod - 2 >= 0) {
+          this.setState({ goldMod: goldMod - 1 });
           return true;
         }
       case "fishing":
-        if (gold - goldSub - 2 >= 0) {
-          this.setState({ goldSub: goldSub + 3 });
+        if (gold + goldMod - 2 >= 0) {
+          this.setState({ goldMod: goldMod - 1 });
           return true;
         }
       case "bakeBread":
-        if (gold - goldSub - 2 >= 0) {
-          this.setState({ goldSub: goldSub + 2 });
+        if (gold + goldMod - 2 >= 0) {
+          this.setState({ goldMod: goldMod - 1 });
           return true;
         }
       default:
@@ -197,6 +177,7 @@ export default class Clock extends Component {
       const workerIndex = workForce.findIndex(
         x => x.get("name") === parseInt(e.target.getAttribute("workername"))
       );
+
       const updatedWorkForce = workForce
         .setIn([workerIndex, "task"], e.target.getAttribute("task"))
         .setIn(
@@ -281,12 +262,6 @@ export default class Clock extends Component {
       breadMod,
       gold,
       goldMod,
-      breadSub,
-      fishSub,
-      goldSub,
-      breadAdd,
-      fishAdd,
-      goldAdd,
       warningCount,
       workForce,
       breadValue,
@@ -315,32 +290,20 @@ export default class Clock extends Component {
       fish:
         workForceRewards
           .filter(f => f.get("type") === "fish")
-          .reduce((x, y) => x + y.get("amount"), fish) *
-          fishMod -
-        fishSub +
-        fishAdd,
+          .reduce((x, y) => x + y.get("amount"), fish) + fishMod,
       bread:
         workForceRewards
           .filter(b => b.get("type") === "bread")
-          .reduce((x, y) => x + y.get("amount"), bread) *
-          breadMod -
-        breadSub +
-        breadAdd,
+          .reduce((x, y) => x + y.get("amount"), bread) + breadMod,
       gold:
         workForceRewards
           .filter(g => g.get("type") === "gold")
-          .reduce((x, y) => x + y.get("amount"), gold) *
-          goldMod -
-        goldSub +
-        goldAdd,
-      fishAdd: 0,
-      breadAdd: 0,
-      goldAdd: 0,
-      fishSub: 0,
-      breadSub: 0,
-      goldSub: 0,
+          .reduce((x, y) => x + y.get("amount"), gold) + goldMod,
       breadMarket: 0,
       fishMarket: 0,
+      breadMod: 0,
+      fishMod: 0,
+      goldMod: 0,
       breadValue: breadCalculation,
       fishValue: fishCalculation,
       warningCount: warningCount ? warningCount - 1 : 0,
