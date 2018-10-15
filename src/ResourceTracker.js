@@ -2,7 +2,7 @@ import React, { Component } from "react";
 
 export default class ResourceTracker extends Component {
   render() {
-    const { time, fish, gold, bread } = this.props;
+    const { time, fish, gold, bread, muffins } = this.props;
     return (
       <table className="striped centered">
         <thead>
@@ -28,6 +28,10 @@ export default class ResourceTracker extends Component {
           <tr>
             <td>Bread</td>
             <td>{bread}</td>
+          </tr>
+          <tr>
+            <td>Muffins</td>
+            <td>{muffins}</td>
           </tr>
         </tbody>
       </table>

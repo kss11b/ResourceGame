@@ -13,10 +13,12 @@ export default class Clock extends Component {
     time: 0,
     fish: 0,
     bread: 0,
+    muffins: 0,
     gold: 15,
     fishMod: 0,
     breadMod: 0,
     goldMod: 0,
+    muffinMod: 0,
     warningMessage: "",
     warningCount: 0,
     working: List(),
@@ -50,8 +52,31 @@ export default class Clock extends Component {
     },
     {
       name: "Bake Bread",
-      difficulty: 2,
+      difficulty: 3,
       actionName: "bakeBread"
+    },
+    {
+      name: "Bake Muffins",
+      difficulty: 5,
+      actionName: "bakeMuffins"
+    }
+  ]);
+
+  workerTypes = fromJS([
+    {
+      key: "baker",
+      name: "Baker",
+      cost: 3
+    },
+    {
+      key: "miner",
+      name: "Miner",
+      cost: 5
+    },
+    {
+      key: "fisherman",
+      name: "Fisherman",
+      cost: 2
     }
   ]);
 
@@ -81,6 +106,10 @@ export default class Clock extends Component {
         return worker
           .set("task", null)
           .set("reward", Map({ type: "bread", amount: 15 }));
+      case "bakeMuffins":
+        return worker
+          .set("task", null)
+          .set("reward", Map({ type: "muffins", amount: 15 }));
       default:
         return worker;
     }
@@ -161,6 +190,11 @@ export default class Clock extends Component {
           return true;
         }
       case "bakeBread":
+        if (gold + goldMod - 2 >= 0) {
+          this.setState({ goldMod: goldMod - 1 });
+          return true;
+        }
+      case "bakeMuffins":
         if (gold + goldMod - 2 >= 0) {
           this.setState({ goldMod: goldMod - 1 });
           return true;
@@ -262,6 +296,8 @@ export default class Clock extends Component {
       breadMod,
       gold,
       goldMod,
+      muffins,
+      muffinMod,
       warningCount,
       workForce,
       breadValue,
@@ -295,6 +331,10 @@ export default class Clock extends Component {
         workForceRewards
           .filter(b => b.get("type") === "bread")
           .reduce((x, y) => x + y.get("amount"), bread) + breadMod,
+      muffins:
+        workForceRewards
+          .filter(g => g.get("type") === "muffins")
+          .reduce((x, y) => x + y.get("amount"), muffins) + muffinMod,
       gold:
         workForceRewards
           .filter(g => g.get("type") === "gold")
@@ -304,6 +344,7 @@ export default class Clock extends Component {
       breadMod: 0,
       fishMod: 0,
       goldMod: 0,
+      muffinMod: 0,
       breadValue: breadCalculation,
       fishValue: fishCalculation,
       warningCount: warningCount ? warningCount - 1 : 0,
@@ -325,9 +366,11 @@ export default class Clock extends Component {
       fish,
       bread,
       gold,
+      muffins,
       fishMod,
       goldMod,
       breadMod,
+      muffinMod,
       workForce,
       detailWorker,
       breadValue,
@@ -404,7 +447,13 @@ export default class Clock extends Component {
           </a>
         </div>
         <div className="col s6">
-          <ResourceTracker gold={gold} time={time} fish={fish} bread={bread} />
+          <ResourceTracker
+            gold={gold}
+            time={time}
+            fish={fish}
+            bread={bread}
+            muffins={muffins}
+          />
         </div>
         <div className="col s6">
           <DisplayItem />
